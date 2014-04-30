@@ -2,35 +2,52 @@
 
 # Takes color as first argument, and text to print as other arguments.
 function colored
-    set_color $argv[1]
-    set -e argv[1]
-    echo $argv
-    set_color normal
+  set_color $argv[1]
+  set -e argv[1]
+  echo $argv
+  set_color normal
 end
 
 if test -d ~/.oh-my-fish
-    colored yellow -n You already have Oh My Fish installed.
-    echo " You'll need to remove ~/.oh-my-fish if you want to install"
-    exit
+  colored yellow -n You already have Oh My Fish installed.
+  echo " You'll need to remove ~/.oh-my-fish if you want to reinstall it."
+  exit
 end
 
 colored blue Cloning Oh My Fish...
 type git >/dev/null
 and git clone https://github.com/bpinto/oh-my-fish.git ~/.oh-my-fish
 or begin
-    echo git not installed
-    exit
+  echo  "Git is not installed. You need to install at least git-core."
+  exit
 end
 
 colored blue Looking for an existing fish config...
-if test -f ~/.config/fish/config.fish
-    colored yellow -n "Found ~/.config/fish/config.fish."
+if test -e ~/.config/fish/config.fish
+  colored yellow -n "Found ~/.config/fish/config.fish."
+
+  if contains -- $argv[1] -m -r
+    set action (expr substr $argv[1] 2 1)
+  else
+    read -l -p 'echo "Modify (append needed lines), replace (with backup)? [M/r]: "' action
+  end
+
+  if contains $action "" "M" "m"
+    colored green " Using the Oh My Fish template file and adding it to the end of ~/.config/fish/config.fish"
+
+    echo -e "\n### Oh My Fish configuration\n" >> ~/.config/fish/config.fish
+    cat ~/.oh-my-fish/templates/config.fish >> ~/.config/fish/config.fish
+  else
     colored green " Backing up to ~/.config/fish/config.orig"
     mv ~/.config/fish/config.{fish,orig}
-end
 
-colored blue "Using the Oh My Fish template file and adding it to ~/.config/fish/config.fish"
-cp ~/.oh-my-fish/templates/config.fish ~/.config/fish/config.fish
+    colored green "Using the Oh My Fish template file to replace ~/.config/fish/config.fish"
+    cp ~/.oh-my-fish/templates/config.fish ~/.config/fish/config.fish
+  end
+else
+  colored green "Using the Oh My Fish template file to create ~/.config/fish/config.fish"
+  cp ~/.oh-my-fish/templates/config.fish ~/.config/fish/config.fish
+end
 
 colored green \
 '          _
@@ -64,5 +81,3 @@ echo
 echo
 colored green ' ....is now installed.'
 
-# Run shell after installation.
-fish
