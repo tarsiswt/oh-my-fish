@@ -25,7 +25,10 @@ import plugins/$fish_plugins themes/$fish_theme
 
 # Source all files inside custom directory.
 for load in $fish_custom/*.load
-  . $load
+  source $load
+end
+for load in $fish_custom/*.fish
+  source $load
 end
 
 # Prepend extracted user functions so they have the highest priority.
